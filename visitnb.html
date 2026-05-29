@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スタジオニューボーンフォトご予約</title>
+    <title>出張ニューボーンフォトご予約</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,8 +46,7 @@
         .time-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: #a89f91; }
 
         .btn-area { margin-top: 24px; padding: 0 16px; }
-        /* 送信ボタンの色を「グレージュ(#a89f91)」に変更 */
-        button { width: 100%; padding: 16px; background-color: #a89f91; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 159, 145, 0.2); transition: all 0.2s; }
+        button { width: 100%; padding: 16px; background-color: #a89f91; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 159, 145, 0.1); transition: all 0.2s; }
         button:disabled { background-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; box-shadow: none; }
         button:active { background-color: #8c8376; transform: scale(0.99); }
     </style>
@@ -56,7 +55,7 @@
 
     <div class="container">
         <div class="header-area">
-            <h2>スタジオニューボーン予約</h2>
+            <h2>出張ニューボーンフォト予約</h2>
             <p class="subtitle">必要事項をご入力の上、送信してください。</p>
         </div>
         
@@ -78,7 +77,10 @@
                 <input type="text" id="zipcode" placeholder="例：123-4567" style="margin-bottom: 12px;">
                 
                 <span class="sub-label">住所</span>
-                <input type="text" id="address" placeholder="例：東京都渋谷区○○1-2-3">
+                <input type="text" id="address" placeholder="例：東京都渋谷区○○1-2-3" style="margin-bottom: 12px;">
+
+                <span class="sub-label">里帰りの場合の表札名<span class="optional-badge">任意</span></span>
+                <input type="text" id="nameplate" placeholder="例：田中（実家の苗字など）">
             </div>
 
             <div class="form-group">
@@ -114,11 +116,10 @@
             <div class="form-group">
                 <label class="required">希望プラン<span class="required-badge">必須</span></label>
                 <div class="choice-group">
-                    <label class="choice-label"><input type="radio" name="plan" value="平日限定プラン¥33,000"> 平日限定プラン¥33,000</label>
-                    <label class="choice-label"><input type="radio" name="plan" value="ミニプラン¥40,700"> ミニプラン¥40,700</label>
-                    <label class="choice-label"><input type="radio" name="plan" value="スタンダードプラン¥55,000"> スタンダードプラン¥55,000</label>
-                    <label class="choice-label"><input type="radio" name="plan" value="プレミアムプラン¥73,700"> プレミアムプラン¥73,700</label>
-                    <label class="choice-label"><input type="radio" name="plan" value="相談したい"> 相談したい</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="ミニプラン ¥40,700"> ミニプラン ¥40,700</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="スタンダードプラン ¥55,000"> スタンダードプラン ¥55,000</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="プレミアムプラン ¥73,300"> プレミアムプラン ¥73,300</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="赤ちゃんのいる暮らしプラン ¥40,700"> 赤ちゃんのいる暮らしプラン ¥40,700</label>
                 </div>
             </div>
 
@@ -184,7 +185,8 @@
     </div>
 
     <script>
-        const MY_LIFF_ID = "2006407169-7VIOxey0"; 
+        // 【重要】LINE Developersで「出張ニューボーン用」に新しく作ったLIFF IDをここに貼り付けてください
+        const MY_LIFF_ID = "2006407169-GZWrUBCd"; 
 
         // 初期化処理
         document.addEventListener("DOMContentLoaded", function() {
@@ -216,12 +218,13 @@
             const zipcode = document.getElementById('zipcode').value.trim() || '未記入';
             const address = document.getElementById('address').value.trim();
             
-            // 日付の取得
+            // 出張フォームの追加項目（表札名）の取得
+            const nameplate = document.getElementById('nameplate').value.trim() || 'なし';
+            
             const date1 = document.getElementById('date1').value;
             const date2 = document.getElementById('date2').value;
             const date3 = document.getElementById('date3').value;
             
-            // ラジオボタンの取得（時間帯）
             const time1Radio = document.querySelector('input[name="time1"]:checked');
             const time1 = time1Radio ? time1Radio.value : '';
             
@@ -243,7 +246,6 @@
             const planRadio = document.querySelector('input[name="plan"]:checked');
             const plan = planRadio ? planRadio.value : '';
 
-            // チェックボックス（オプション）の取得
             const optionBoxes = document.querySelectorAll('input[name="option"]:checked');
             const options = [];
             optionBoxes.forEach((cb) => { options.push(cb.value); });
@@ -255,23 +257,25 @@
             const genderRadio = document.querySelector('input[name="babyGender"]:checked');
             const babyGender = genderRadio ? genderRadio.value : '未記入';
 
-            // 必須入力チェック（希望日①・②は、日付と時間帯の「両方」が選ばれている必要があります）
+            // 必須入力チェック
             if (!nameInput || !phone || !address || !date1 || !time1 || !date2 || !time2 || !plan) {
                 alert('必須項目(*)をすべて入力し、撮影希望日の日付と時間帯を両方選択してください。');
                 return;
             }
 
-            // チャットへ送る日時のレイアウト組み立て
+            const formatDate = (dt) => dt ? dt.replace('T', ' ') : 'なし';
+
             const dateTimeText1 = `${date1} (${time1})`;
             const dateTimeText2 = `${date2} (${time2})`;
             const dateTimeText3 = date3 ? `${date3} (${time3})` : 'なし';
 
-            // 送信メッセージの構築
-            const messageText = `【予約申込】スタジオニューボーン
+            // 送信メッセージの構築（「表札名」の項目を追加）
+            const messageText = `【予約申込】出張ニューボーン
 ■お名前：${name}
 ■お電話番号：${phone}
 ■郵便番号：${zipcode}
 ■ご住所：${address}
+■里帰りの場合の表札名：${nameplate}
 ■撮影希望日①：${dateTimeText1}
 ■撮影希望日②：${dateTimeText2}
 ■撮影希望日③：${dateTimeText3}
