@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>出張ニューボーンフォトご予約</title>
+    <!-- LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,7 +20,12 @@
         .form-content { padding: 0 16px; }
         
         /* 入力欄を囲むカード */
-        .form-group { background: #ffffff; padding: 20px 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        .form-group { background: #ffffff; padding: 20px 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; position: relative; }
+        
+        /* エラー時のスタイル */
+        .form-group.has-error { border-color: #ff4d4f; box-shadow: 0 0 0 1px #ff4d4f; }
+        .error-message { color: #ff4d4f; font-size: 12px; font-weight: 600; margin-top: 8px; display: none; }
+        .form-group.has-error .error-message { display: block; }
         
         label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #222; }
         .sub-label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 6px 0; color: #555; }
@@ -35,16 +41,10 @@
         input:focus, textarea:focus { border-color: #a89f91; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(168, 159, 145, 0.1); }
         input::placeholder, textarea::placeholder { color: #bfbfbf; font-size: 15px; }
         
-        /* ラジオボタン・チェックボックスの共通スタイル */
         .choice-group { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
         .choice-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; cursor: pointer; }
         .choice-label input { width: 20px; height: 20px; margin-right: 12px; accent-color: #7aa692; }
         
-        /* 希望日カード内の時間帯選択用スタイル */
-        .time-selector-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; }
-        .time-label { display: flex; align-items: center; font-size: 14px; font-weight: normal; cursor: pointer; color: #555; }
-        .time-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: #a89f91; }
-
         .btn-area { margin-top: 24px; padding: 0 16px; }
         button { width: 100%; padding: 16px; background-color: #a89f91; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 159, 145, 0.1); transition: all 0.2s; }
         button:disabled { background-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; box-shadow: none; }
@@ -60,60 +60,47 @@
         </div>
         
         <div class="form-content">
-            <div class="form-group">
+            <div class="form-group" id="group_name">
                 <label for="name">お名前<span class="required-badge">必須</span></label>
-                <input type="text" id="name" placeholder="例：山田 太郎">
+                <input type="text" id="name" placeholder="例：鈴木 花子">
+                <div class="error-message">お名前を入力してください。</div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="group_phone">
                 <label for="phone">お電話番号<span class="required-badge">必須</span></label>
                 <input type="tel" id="phone" placeholder="例：09012345678">
+                <div class="error-message">お電話番号を入力してください。</div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="group_address">
                 <label>ご住所<span class="required-badge">必須</span></label>
-                
                 <span class="sub-label" style="margin-top: 0;">郵便番号</span>
-                <input type="text" id="zipcode" placeholder="例：123-4567" style="margin-bottom: 12px;">
-                
+                <input type="number" id="zipcode" placeholder="例：1234567" style="margin-bottom: 12px;" inputmode="numeric">
                 <span class="sub-label">住所</span>
-                <input type="text" id="address" placeholder="例：東京都渋谷区○○1-2-3" style="margin-bottom: 12px;">
-
+                <input type="text" id="address" placeholder="例：大阪府高槻市○○1-2-3" style="margin-bottom: 12px;">
                 <span class="sub-label">里帰りの場合の表札名<span class="optional-badge">任意</span></span>
                 <input type="text" id="nameplate" placeholder="例：田中（実家の苗字など）">
+                <div class="error-message">住所を入力してください。</div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="group_date1">
                 <label for="date1">撮影希望日①<span class="required-badge">必須</span></label>
                 <input type="date" id="date1">
-                <div class="time-selector-group">
-                    <label class="time-label"><input type="radio" name="time1" value="午前枠10:30"> 午前枠10:30</label>
-                    <label class="time-label"><input type="radio" name="time1" value="午後枠13:30"> 午後枠13:30</label>
-                    <label class="time-label"><input type="radio" name="time1" value="相談したい"> 相談したい</label>
-                </div>
+                <div class="error-message">撮影希望日①を選択してください。</div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="group_date2">
                 <label for="date2">撮影希望日②<span class="required-badge">必須</span></label>
                 <input type="date" id="date2">
-                <div class="time-selector-group">
-                    <label class="time-label"><input type="radio" name="time2" value="午前枠10:30"> 午前枠10:30</label>
-                    <label class="time-label"><input type="radio" name="time2" value="午後枠13:30"> 午後枠13:30</label>
-                    <label class="time-label"><input type="radio" name="time2" value="相談したい"> 相談したい</label>
-                </div>
+                <div class="error-message">撮影希望日②を選択してください。</div>
             </div>
 
             <div class="form-group">
                 <label for="date3">撮影希望日③<span class="optional-badge">任意</span></label>
                 <input type="date" id="date3">
-                <div class="time-selector-group">
-                    <label class="time-label"><input type="radio" name="time3" value="午前枠10:30"> 午前枠10:30</label>
-                    <label class="time-label"><input type="radio" name="time3" value="午後枠13:30"> 午後枠13:30</label>
-                    <label class="time-label"><input type="radio" name="time3" value="相談したい"> 相談したい</label>
-                </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="group_plan">
                 <label class="required">希望プラン<span class="required-badge">必須</span></label>
                 <div class="choice-group">
                     <label class="choice-label"><input type="radio" name="plan" value="ミニプラン ¥40,700"> ミニプラン ¥40,700</label>
@@ -121,6 +108,7 @@
                     <label class="choice-label"><input type="radio" name="plan" value="プレミアムプラン ¥73,300"> プレミアムプラン ¥73,300</label>
                     <label class="choice-label"><input type="radio" name="plan" value="赤ちゃんのいる暮らしプラン ¥40,700"> 赤ちゃんのいる暮らしプラン ¥40,700</label>
                 </div>
+                <div class="error-message">希望プランを選択してください。</div>
             </div>
 
             <div class="form-group">
@@ -185,10 +173,8 @@
     </div>
 
     <script>
-        // 【重要】LINE Developersで「出張ニューボーン用」に新しく作ったLIFF IDをここに貼り付けてください
-        const MY_LIFF_ID = "2006407169-GZWrUBCd"; 
+        const MY_LIFF_ID = "ここに新しいLIFF_IDを入れる"; 
 
-        // 初期化処理
         document.addEventListener("DOMContentLoaded", function() {
             try {
                 liff.init({ liffId: MY_LIFF_ID })
@@ -201,84 +187,73 @@
                             btn.innerText = '送信する';
                         }
                     })
-                    .catch((err) => { 
-                        alert('LINE通信エラー: ' + err.message);
-                    });
-            } catch (e) {
-                alert('プログラム実行エラー: ' + e.message);
-            }
+                    .catch((err) => { alert('LINE通信エラー: ' + err.message); });
+            } catch (e) { alert('プログラム実行エラー: ' + e.message); }
         });
 
-        // 送信処理
         function submitForm() {
+            const errorGroups = document.querySelectorAll('.form-group');
+            errorGroups.forEach(g => g.classList.remove('has-error'));
+            let hasError = false;
+
             const nameInput = document.getElementById('name').value.trim();
             const name = nameInput ? nameInput + ' 様' : '';
+            if (!nameInput) { document.getElementById('group_name').classList.add('has-error'); hasError = true; }
             
             const phone = document.getElementById('phone').value.trim();
+            if (!phone) { document.getElementById('group_phone').classList.add('has-error'); hasError = true; }
+
             const zipcode = document.getElementById('zipcode').value.trim() || '未記入';
             const address = document.getElementById('address').value.trim();
+            if (!address) { document.getElementById('group_address').classList.add('has-error'); hasError = true; }
             
-            // 出張フォームの追加項目（表札名）の取得
             const nameplate = document.getElementById('nameplate').value.trim() || 'なし';
-            
-            const date1 = document.getElementById('date1').value;
-            const date2 = document.getElementById('date2').value;
-            const date3 = document.getElementById('date3').value;
-            
-            const time1Radio = document.querySelector('input[name="time1"]:checked');
-            const time1 = time1Radio ? time1Radio.value : '';
-            
-            const time2Radio = document.querySelector('input[name="time2"]:checked');
-            const time2 = time2Radio ? time2Radio.value : '';
-            
-            const time3Radio = document.querySelector('input[name="time3"]:checked');
-            const time3 = time3Radio ? time3Radio.value : '未選択';
-            
-            const birthDate = document.getElementById('birthDate').value || '未記入';
-            const babyName = document.getElementById('babyName').value.trim() || '未記入';
-            const babyWeightInput = document.getElementById('babyWeight').value.trim();
-            const babyWeight = babyWeightInput ? babyWeightInput + 'g' : '未記入';
-            
-            const siblings = document.getElementById('siblings').value.trim() || 'なし';
-            const attendees = document.getElementById('attendees').value.trim() || '未記入';
-            const questions = document.getElementById('questions').value.trim() || 'なし';
 
+            const date1 = document.getElementById('date1').value;
+            if (!date1) { document.getElementById('group_date1').classList.add('has-error'); hasError = true; }
+
+            const date2 = document.getElementById('date2').value;
+            if (!date2) { document.getElementById('group_date2').classList.add('has-error'); hasError = true; }
+
+            const date3 = document.getElementById('date3').value || 'なし';
+            
             const planRadio = document.querySelector('input[name="plan"]:checked');
             const plan = planRadio ? planRadio.value : '';
+            if (!plan) { document.getElementById('group_plan').classList.add('has-error'); hasError = true; }
+
+            if (hasError) {
+                alert('必須項目に入力漏れがあります。赤く表示された箇所を確認してください。');
+                const firstError = document.querySelector('.has-error');
+                if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                return;
+            }
 
             const optionBoxes = document.querySelectorAll('input[name="option"]:checked');
             const options = [];
             optionBoxes.forEach((cb) => { options.push(cb.value); });
             const optionText = options.length > 0 ? options.map(opt => `・${opt}`).join('\n') : 'なし';
 
+            const birthDate = document.getElementById('birthDate').value || '未記入';
             const deliveryRadio = document.querySelector('input[name="delivery"]:checked');
             const delivery = deliveryRadio ? deliveryRadio.value : '未記入';
-
+            const babyName = document.getElementById('babyName').value.trim() || '未記入';
             const genderRadio = document.querySelector('input[name="babyGender"]:checked');
             const babyGender = genderRadio ? genderRadio.value : '未記入';
+            const babyWeightInput = document.getElementById('babyWeight').value.trim();
+            const babyWeight = babyWeightInput ? babyWeightInput + 'g' : '未記入';
+            const siblings = document.getElementById('siblings').value.trim() || 'なし';
+            const attendees = document.getElementById('attendees').value.trim() || '未記入';
+            const questions = document.getElementById('questions').value.trim() || 'なし';
 
-            // 必須入力チェック
-            if (!nameInput || !phone || !address || !date1 || !time1 || !date2 || !time2 || !plan) {
-                alert('必須項目(*)をすべて入力し、撮影希望日の日付と時間帯を両方選択してください。');
-                return;
-            }
-
-            const formatDate = (dt) => dt ? dt.replace('T', ' ') : 'なし';
-
-            const dateTimeText1 = `${date1} (${time1})`;
-            const dateTimeText2 = `${date2} (${time2})`;
-            const dateTimeText3 = date3 ? `${date3} (${time3})` : 'なし';
-
-            // 送信メッセージの構築（「表札名」の項目を追加）
             const messageText = `【予約申込】出張ニューボーン
 ■お名前：${name}
 ■お電話番号：${phone}
 ■郵便番号：${zipcode}
 ■ご住所：${address}
 ■里帰りの場合の表札名：${nameplate}
-■撮影希望日①：${dateTimeText1}
-■撮影希望日②：${dateTimeText2}
-■撮影希望日③：${dateTimeText3}
+■撮影希望日①：${date1}
+■撮影希望日②：${date2}
+■撮影希望日③：${date3}
 ■希望プラン：${plan}
 ■オプション：
 ${optionText}
@@ -296,17 +271,7 @@ ${questions}
 
 上記の内容で予約を送信しました。確定までしばらくお待ちください。`;
 
-            liff.sendMessages([
-                {
-                    type: 'text',
-                    text: messageText
-                }
-            ]).then(() => {
-                liff.closeWindow();
-            }).catch((err) => {
-                alert('送信エラーが発生しました。');
-                console.error(err);
-            });
+            liff.sendMessages([{ type: 'text', text: messageText }]).then(() => { liff.closeWindow(); }).catch((err) => { alert('送信エラーが発生しました。'); });
         }
     </script>
 </body>
