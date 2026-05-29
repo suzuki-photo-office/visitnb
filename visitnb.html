@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スタジオニューボーンフォトご予約</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #b5c8bf; color: #333; padding: 0 0 40px 0; }
+        
+        .container { max-width: 500px; margin: 0 auto; background-color: #b5c8bf; }
+        
+        /* タイトルエリア */
+        .header-area { background-color: #b5c8bf; padding: 30px 16px 20px 16px; text-align: center; color: #ffffff; }
+        h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { font-size: 13px; color: #ffffff; opacity: 0.9; }
+        
+        .form-content { padding: 0 16px; }
+        
+        /* 入力欄を囲むカード */
+        .form-group { background: #ffffff; padding: 20px 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #222; }
+        .sub-label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 6px 0; color: #555; }
+        .required-badge { background-color: #ff4d4f; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+        .optional-badge { background-color: #8c8c8c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+        
+        input[type="text"], input[type="tel"], input[type="date"], input[type="number"], textarea { 
+            width: 100%; padding: 14px; border: 1px solid #d9d9d9; border-radius: 8px; font-size: 16px; background: #ffffff; color: #333; transition: all 0.2s; -webkit-appearance: none;
+        }
+        input#zipcode { width: 45%; }
+        
+        textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+        input:focus, textarea:focus { border-color: #a89f91; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(168, 159, 145, 0.1); }
+        input::placeholder, textarea::placeholder { color: #bfbfbf; font-size: 15px; }
+        
+        /* ラジオボタン・チェックボックスの共通スタイル */
+        .choice-group { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+        .choice-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; cursor: pointer; }
+        .choice-label input { width: 20px; height: 20px; margin-right: 12px; accent-color: #7aa692; }
+        
+        /* 希望日カード内の時間帯選択用スタイル */
+        .time-selector-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; }
+        .time-label { display: flex; align-items: center; font-size: 14px; font-weight: normal; cursor: pointer; color: #555; }
+        .time-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: #a89f91; }
+
+        .btn-area { margin-top: 24px; padding: 0 16px; }
+        /* 送信ボタンの色を「グレージュ(#a89f91)」に変更 */
+        button { width: 100%; padding: 16px; background-color: #a89f91; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 159, 145, 0.2); transition: all 0.2s; }
+        button:disabled { background-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; box-shadow: none; }
+        button:active { background-color: #8c8376; transform: scale(0.99); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-area">
+            <h2>スタジオニューボーン予約</h2>
+            <p class="subtitle">必要事項をご入力の上、送信してください。</p>
+        </div>
+        
+        <div class="form-content">
+            <div class="form-group">
+                <label for="name">お名前<span class="required-badge">必須</span></label>
+                <input type="text" id="name" placeholder="例：山田 太郎">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">お電話番号<span class="required-badge">必須</span></label>
+                <input type="tel" id="phone" placeholder="例：09012345678">
+            </div>
+
+            <div class="form-group">
+                <label>ご住所<span class="required-badge">必須</span></label>
+                
+                <span class="sub-label" style="margin-top: 0;">郵便番号</span>
+                <input type="text" id="zipcode" placeholder="例：123-4567" style="margin-bottom: 12px;">
+                
+                <span class="sub-label">住所</span>
+                <input type="text" id="address" placeholder="例：東京都渋谷区○○1-2-3">
+            </div>
+
+            <div class="form-group">
+                <label for="date1">撮影希望日①<span class="required-badge">必須</span></label>
+                <input type="date" id="date1">
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time1" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time1" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time1" value="相談したい"> 相談したい</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="date2">撮影希望日②<span class="required-badge">必須</span></label>
+                <input type="date" id="date2">
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time2" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time2" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time2" value="相談したい"> 相談したい</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="date3">撮影希望日③<span class="optional-badge">任意</span></label>
+                <input type="date" id="date3">
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time3" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time3" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time3" value="相談したい"> 相談したい</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="required">希望プラン<span class="required-badge">必須</span></label>
+                <div class="choice-group">
+                    <label class="choice-label"><input type="radio" name="plan" value="平日限定プラン¥33,000"> 平日限定プラン¥33,000</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="ミニプラン¥40,700"> ミニプラン¥40,700</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="スタンダードプラン¥55,000"> スタンダードプラン¥55,000</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="プレミアムプラン¥73,700"> プレミアムプラン¥73,700</label>
+                    <label class="choice-label"><input type="radio" name="plan" value="相談したい"> 相談したい</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>オプション<span class="optional-badge">任意</span></label>
+                <div class="choice-group">
+                    <label class="choice-label"><input type="checkbox" name="option" value="生花撮影"> 生花撮影</label>
+                    <label class="choice-label"><input type="checkbox" name="option" value="ミニプランへの兄弟ショット追加"> ミニプランへの兄弟ショット追加</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="birthDate">出産予定日or出産日<span class="optional-badge">任意</span></label>
+                <input type="date" id="birthDate">
+            </div>
+
+            <div class="form-group">
+                <label>分娩方法<span class="optional-badge">任意</span></label>
+                <div class="choice-group">
+                    <label class="choice-label"><input type="radio" name="delivery" value="自然分娩"> 自然分娩</label>
+                    <label class="choice-label"><input type="radio" name="delivery" value="帝王切開"> 帝王切開</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="babyName">お子様のお名前（決まっていれば）<span class="optional-badge">任意</span></label>
+                <input type="text" id="babyName" placeholder="例：ひなた（漢字：陽向）">
+            </div>
+
+            <div class="form-group">
+                <label>お子様の性別<span class="optional-badge">任意</span></label>
+                <div class="choice-group">
+                    <label class="choice-label"><input type="radio" name="babyGender" value="男の子"> 男の子</label>
+                    <label class="choice-label"><input type="radio" name="babyGender" value="女の子"> 女の子</label>
+                    <label class="choice-label"><input type="radio" name="babyGender" value="わからない"> わからない</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="babyWeight">出生体重（g）<span class="optional-badge">任意</span></label>
+                <input type="number" id="babyWeight" placeholder="例：3100">
+            </div>
+
+            <div class="form-group">
+                <label for="siblings">ご兄弟のお名前、性別、年齢<span class="optional-badge">任意</span></label>
+                <textarea id="siblings" placeholder="例：兄：そうた（4歳）"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="attendees">撮影に参加される方の人数と続柄<span class="optional-badge">任意</span></label>
+                <textarea id="attendees" placeholder="例：大人2人（夫婦）、子供1人（上の子）"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="questions">ご質問、ご相談<span class="optional-badge">任意</span></label>
+                <textarea id="questions" placeholder="例：上の子との2ショットも希望です。"></textarea>
+            </div>
+        </div>
+
+        <div class="btn-area">
+            <button id="submitBtn" onclick="submitForm()" disabled>読み込み中...</button>
+        </div>
+    </div>
+
+    <script>
+        const MY_LIFF_ID = "2006407169-7VIOxey0"; 
+
+        // 初期化処理
+        document.addEventListener("DOMContentLoaded", function() {
+            try {
+                liff.init({ liffId: MY_LIFF_ID })
+                    .then(() => {
+                        if (!liff.isLoggedIn()) {
+                            liff.login();
+                        } else {
+                            const btn = document.getElementById('submitBtn');
+                            btn.disabled = false;
+                            btn.innerText = '送信する';
+                        }
+                    })
+                    .catch((err) => { 
+                        alert('LINE通信エラー: ' + err.message);
+                    });
+            } catch (e) {
+                alert('プログラム実行エラー: ' + e.message);
+            }
+        });
+
+        // 送信処理
+        function submitForm() {
+            const nameInput = document.getElementById('name').value.trim();
+            const name = nameInput ? nameInput + ' 様' : '';
+            
+            const phone = document.getElementById('phone').value.trim();
+            const zipcode = document.getElementById('zipcode').value.trim() || '未記入';
+            const address = document.getElementById('address').value.trim();
+            
+            // 日付の取得
+            const date1 = document.getElementById('date1').value;
+            const date2 = document.getElementById('date2').value;
+            const date3 = document.getElementById('date3').value;
+            
+            // ラジオボタンの取得（時間帯）
+            const time1Radio = document.querySelector('input[name="time1"]:checked');
+            const time1 = time1Radio ? time1Radio.value : '';
+            
+            const time2Radio = document.querySelector('input[name="time2"]:checked');
+            const time2 = time2Radio ? time2Radio.value : '';
+            
+            const time3Radio = document.querySelector('input[name="time3"]:checked');
+            const time3 = time3Radio ? time3Radio.value : '未選択';
+            
+            const birthDate = document.getElementById('birthDate').value || '未記入';
+            const babyName = document.getElementById('babyName').value.trim() || '未記入';
+            const babyWeightInput = document.getElementById('babyWeight').value.trim();
+            const babyWeight = babyWeightInput ? babyWeightInput + 'g' : '未記入';
+            
+            const siblings = document.getElementById('siblings').value.trim() || 'なし';
+            const attendees = document.getElementById('attendees').value.trim() || '未記入';
+            const questions = document.getElementById('questions').value.trim() || 'なし';
+
+            const planRadio = document.querySelector('input[name="plan"]:checked');
+            const plan = planRadio ? planRadio.value : '';
+
+            // チェックボックス（オプション）の取得
+            const optionBoxes = document.querySelectorAll('input[name="option"]:checked');
+            const options = [];
+            optionBoxes.forEach((cb) => { options.push(cb.value); });
+            const optionText = options.length > 0 ? options.map(opt => `・${opt}`).join('\n') : 'なし';
+
+            const deliveryRadio = document.querySelector('input[name="delivery"]:checked');
+            const delivery = deliveryRadio ? deliveryRadio.value : '未記入';
+
+            const genderRadio = document.querySelector('input[name="babyGender"]:checked');
+            const babyGender = genderRadio ? genderRadio.value : '未記入';
+
+            // 必須入力チェック（希望日①・②は、日付と時間帯の「両方」が選ばれている必要があります）
+            if (!nameInput || !phone || !address || !date1 || !time1 || !date2 || !time2 || !plan) {
+                alert('必須項目(*)をすべて入力し、撮影希望日の日付と時間帯を両方選択してください。');
+                return;
+            }
+
+            // チャットへ送る日時のレイアウト組み立て
+            const dateTimeText1 = `${date1} (${time1})`;
+            const dateTimeText2 = `${date2} (${time2})`;
+            const dateTimeText3 = date3 ? `${date3} (${time3})` : 'なし';
+
+            // 送信メッセージの構築
+            const messageText = `【予約申込】スタジオニューボーン
+■お名前：${name}
+■お電話番号：${phone}
+■郵便番号：${zipcode}
+■ご住所：${address}
+■撮影希望日①：${dateTimeText1}
+■撮影希望日②：${dateTimeText2}
+■撮影希望日③：${dateTimeText3}
+■希望プラン：${plan}
+■オプション：
+${optionText}
+■出産予定日or出産日：${birthDate}
+■分娩方法：${delivery}
+■お子様のお名前：${babyName}
+■お子様の性別：${babyGender}
+■出生体重：${babyWeight}
+■ご兄弟のお名前、性別、年齢：
+${siblings}
+■撮影に参加される方の人数と続柄：
+${attendees}
+■ご質問、ご相談：
+${questions}
+
+上記の内容で予約を送信しました。確定までしばらくお待ちください。`;
+
+            liff.sendMessages([
+                {
+                    type: 'text',
+                    text: messageText
+                }
+            ]).then(() => {
+                liff.closeWindow();
+            }).catch((err) => {
+                alert('送信エラーが発生しました。');
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
