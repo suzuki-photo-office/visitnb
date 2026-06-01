@@ -45,6 +45,11 @@
         .choice-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; cursor: pointer; }
         .choice-label input { width: 20px; height: 20px; margin-right: 12px; accent-color: #7aa692; }
         
+        /* 時間帯選択用スタイル */
+        .time-selector-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; }
+        .time-label { display: flex; align-items: center; font-size: 14px; font-weight: normal; cursor: pointer; color: #555; }
+        .time-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: #a89f91; }
+
         .btn-area { margin-top: 24px; padding: 0 16px; }
         button { width: 100%; padding: 16px; background-color: #a89f91; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 159, 145, 0.1); transition: all 0.2s; }
         button:disabled { background-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; box-shadow: none; }
@@ -86,18 +91,33 @@
             <div class="form-group" id="group_date1">
                 <label for="date1">撮影希望日①<span class="required-badge">必須</span></label>
                 <input type="date" id="date1">
-                <div class="error-message">撮影希望日①を選択してください。</div>
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time1" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time1" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time1" value="相談したい"> 相談したい</label>
+                </div>
+                <div class="error-message">撮影希望日①の日付と時間帯の両方を選択してください。</div>
             </div>
 
             <div class="form-group" id="group_date2">
                 <label for="date2">撮影希望日②<span class="required-badge">必須</span></label>
                 <input type="date" id="date2">
-                <div class="error-message">撮影希望日②を選択してください。</div>
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time2" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time2" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time2" value="相談したい"> 相談したい</label>
+                </div>
+                <div class="error-message">撮影希望日②の日付と時間帯の両方を選択してください。</div>
             </div>
 
             <div class="form-group">
                 <label for="date3">撮影希望日③<span class="optional-badge">任意</span></label>
                 <input type="date" id="date3">
+                <div class="time-selector-group">
+                    <label class="time-label"><input type="radio" name="time3" value="午前枠10:30"> 午前枠10:30</label>
+                    <label class="time-label"><input type="radio" name="time3" value="午後枠13:30"> 午後枠13:30</label>
+                    <label class="time-label"><input type="radio" name="time3" value="相談したい"> 相談したい</label>
+                </div>
             </div>
 
             <div class="form-group" id="group_plan">
@@ -173,6 +193,7 @@
     </div>
 
     <script>
+        // ⚠️ 設置時に新しく発行した出張用のLIFF IDへ書き換えてください
         const MY_LIFF_ID = "ここに新しいLIFF_IDを入れる"; 
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -210,12 +231,18 @@
             const nameplate = document.getElementById('nameplate').value.trim() || 'なし';
 
             const date1 = document.getElementById('date1').value;
-            if (!date1) { document.getElementById('group_date1').classList.add('has-error'); hasError = true; }
+            const time1Radio = document.querySelector('input[name="time1"]:checked');
+            const time1 = time1Radio ? time1Radio.value : '';
+            if (!date1 || !time1) { document.getElementById('group_date1').classList.add('has-error'); hasError = true; }
 
             const date2 = document.getElementById('date2').value;
-            if (!date2) { document.getElementById('group_date2').classList.add('has-error'); hasError = true; }
+            const time2Radio = document.querySelector('input[name="time2"]:checked');
+            const time2 = time2Radio ? time2Radio.value : '';
+            if (!date2 || !time2) { document.getElementById('group_date2').classList.add('has-error'); hasError = true; }
 
-            const date3 = document.getElementById('date3').value || 'なし';
+            const date3 = document.getElementById('date3').value;
+            const time3Radio = document.querySelector('input[name="time3"]:checked');
+            const time3 = time3Radio ? time3Radio.value : '未選択';
             
             const planRadio = document.querySelector('input[name="plan"]:checked');
             const plan = planRadio ? planRadio.value : '';
@@ -245,15 +272,19 @@
             const attendees = document.getElementById('attendees').value.trim() || '未記入';
             const questions = document.getElementById('questions').value.trim() || 'なし';
 
+            const dateTimeText1 = `${date1} (${time1})`;
+            const dateTimeText2 = `${date2} (${time2})`;
+            const dateTimeText3 = date3 ? `${date3} (${time3})` : 'なし';
+
             const messageText = `【予約申込】出張ニューボーン
 ■お名前：${name}
 ■お電話番号：${phone}
 ■郵便番号：${zipcode}
 ■ご住所：${address}
 ■里帰りの場合の表札名：${nameplate}
-■撮影希望日①：${date1}
-■撮影希望日②：${date2}
-■撮影希望日③：${date3}
+■撮影希望日①：${dateTimeText1}
+■撮影希望日②：${dateTimeText2}
+■撮影希望日③：${dateTimeText3}
 ■希望プラン：${plan}
 ■オプション：
 ${optionText}
