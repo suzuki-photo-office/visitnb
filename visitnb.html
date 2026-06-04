@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>出張ニューボーンフォトご予約</title>
-    <!-- LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,6 +44,14 @@
         .choice-label { display: flex; align-items: center; font-weight: normal; font-size: 15px; cursor: pointer; }
         .choice-label input { width: 20px; height: 20px; margin-right: 12px; accent-color: #7aa692; }
         
+        /* 条件付き詳細入力欄（共通アニメーション） */
+        .conditional-detail-area { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #eee; animation: fadeIn 0.3s ease-in-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* 時間帯選択用スタイル */
         .time-selector-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; }
         .time-label { display: flex; align-items: center; font-size: 14px; font-weight: normal; cursor: pointer; color: #555; }
@@ -134,180 +141,21 @@
             <div class="form-group">
                 <label>オプション<span class="optional-badge">任意</span></label>
                 <div class="choice-group">
-                    <label class="choice-label"><input type="checkbox" name="option" value="生花撮影"> 生花撮影</label>
-                    <label class="choice-label"><input type="checkbox" name="option" value="ミニプランへの兄弟ショット追加"> ミニプランへの兄弟ショット追加</label>
+                    <label class="choice-label">
+                        <input type="checkbox" name="option" value="生花撮影" id="optFlower" onchange="toggleFlowerDetail(this.checked)"> 生花撮影
+                    </label>
+                    <label class="choice-label">
+                        <input type="checkbox" name="option" value="ミニプランへの兄弟ショット追加"> ミニプランへの兄弟ショット追加
+                    </label>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="birthDate">出産予定日or出産日<span class="optional-badge">任意</span></label>
-                <input type="date" id="birthDate">
-            </div>
-
-            <div class="form-group">
-                <label>分娩方法<span class="optional-badge">任意</span></label>
-                <div class="choice-group">
-                    <label class="choice-label"><input type="radio" name="delivery" value="自然分娩"> 自然分娩</label>
-                    <label class="choice-label"><input type="radio" name="delivery" value="帝王切開"> 帝王切開</label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="babyName">お子様のお名前（決まっていれば）<span class="optional-badge">任意</span></label>
-                <input type="text" id="babyName" placeholder="例：ひなた（漢字：陽向）">
-            </div>
-
-            <div class="form-group">
-                <label>お子様の性別<span class="optional-badge">任意</span></label>
-                <div class="choice-group">
-                    <label class="choice-label"><input type="radio" name="babyGender" value="男の子"> 男の子</label>
-                    <label class="choice-label"><input type="radio" name="babyGender" value="女の子"> 女の子</label>
-                    <label class="choice-label"><input type="radio" name="babyGender" value="わからない"> わからない</label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="babyWeight">出生体重（g）<span class="optional-badge">任意</span></label>
-                <input type="number" id="babyWeight" placeholder="例：3100">
-            </div>
-
-            <div class="form-group">
-                <label for="siblings">ご兄弟のお名前、性別、年齢<span class="optional-badge">任意</span></label>
-                <textarea id="siblings" placeholder="例：兄：そうた（4歳）"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="attendees">撮影に参加される方の人数と続柄<span class="optional-badge">任意</span></label>
-                <textarea id="attendees" placeholder="例：大人2人（夫婦）、子供1人（上の子）"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="questions">ご質問、ご相談<span class="optional-badge">任意</span></label>
-                <textarea id="questions" placeholder="例：上の子との2ショットも希望です。"></textarea>
-            </div>
-        </div>
-
-        <div class="btn-area">
-            <button id="submitBtn" onclick="submitForm()" disabled>読み込み中...</button>
-        </div>
-    </div>
-
-    <script>
-        // ⚠️ 設置時に新しく発行した出張用のLIFF IDへ書き換えてください
-        const MY_LIFF_ID = "2006407169-GZWrUBCd"; 
-
-        document.addEventListener("DOMContentLoaded", function() {
-            try {
-                liff.init({ liffId: MY_LIFF_ID })
-                    .then(() => {
-                        if (!liff.isLoggedIn()) {
-                            liff.login();
-                        } else {
-                            const btn = document.getElementById('submitBtn');
-                            btn.disabled = false;
-                            btn.innerText = '送信する';
-                        }
-                    })
-                    .catch((err) => { alert('LINE通信エラー: ' + err.message); });
-            } catch (e) { alert('プログラム実行エラー: ' + e.message); }
-        });
-
-        function submitForm() {
-            const errorGroups = document.querySelectorAll('.form-group');
-            errorGroups.forEach(g => g.classList.remove('has-error'));
-            let hasError = false;
-
-            const nameInput = document.getElementById('name').value.trim();
-            const name = nameInput ? nameInput + ' 様' : '';
-            if (!nameInput) { document.getElementById('group_name').classList.add('has-error'); hasError = true; }
-            
-            const phone = document.getElementById('phone').value.trim();
-            if (!phone) { document.getElementById('group_phone').classList.add('has-error'); hasError = true; }
-
-            const zipcode = document.getElementById('zipcode').value.trim() || '未記入';
-            const address = document.getElementById('address').value.trim();
-            if (!address) { document.getElementById('group_address').classList.add('has-error'); hasError = true; }
-            
-            const nameplate = document.getElementById('nameplate').value.trim() || 'なし';
-
-            const date1 = document.getElementById('date1').value;
-            const time1Radio = document.querySelector('input[name="time1"]:checked');
-            const time1 = time1Radio ? time1Radio.value : '';
-            if (!date1 || !time1) { document.getElementById('group_date1').classList.add('has-error'); hasError = true; }
-
-            const date2 = document.getElementById('date2').value;
-            const time2Radio = document.querySelector('input[name="time2"]:checked');
-            const time2 = time2Radio ? time2Radio.value : '';
-            if (!date2 || !time2) { document.getElementById('group_date2').classList.add('has-error'); hasError = true; }
-
-            const date3 = document.getElementById('date3').value;
-            const time3Radio = document.querySelector('input[name="time3"]:checked');
-            const time3 = time3Radio ? time3Radio.value : '未選択';
-            
-            const planRadio = document.querySelector('input[name="plan"]:checked');
-            const plan = planRadio ? planRadio.value : '';
-            if (!plan) { document.getElementById('group_plan').classList.add('has-error'); hasError = true; }
-
-            if (hasError) {
-                alert('必須項目に入力漏れがあります。赤く表示された箇所を確認してください。');
-                const firstError = document.querySelector('.has-error');
-                if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                return;
-            }
-
-            const optionBoxes = document.querySelectorAll('input[name="option"]:checked');
-            const options = [];
-            optionBoxes.forEach((cb) => { options.push(cb.value); });
-            const optionText = options.length > 0 ? options.map(opt => `・${opt}`).join('\n') : 'なし';
-
-            const birthDate = document.getElementById('birthDate').value || '未記入';
-            const deliveryRadio = document.querySelector('input[name="delivery"]:checked');
-            const delivery = deliveryRadio ? deliveryRadio.value : '未記入';
-            const babyName = document.getElementById('babyName').value.trim() || '未記入';
-            const genderRadio = document.querySelector('input[name="babyGender"]:checked');
-            const babyGender = genderRadio ? genderRadio.value : '未記入';
-            const babyWeightInput = document.getElementById('babyWeight').value.trim();
-            const babyWeight = babyWeightInput ? babyWeightInput + 'g' : '未記入';
-            const siblings = document.getElementById('siblings').value.trim() || 'なし';
-            const attendees = document.getElementById('attendees').value.trim() || '未記入';
-            const questions = document.getElementById('questions').value.trim() || 'なし';
-
-            const dateTimeText1 = `${date1} (${time1})`;
-            const dateTimeText2 = `${date2} (${time2})`;
-            const dateTimeText3 = date3 ? `${date3} (${time3})` : 'なし';
-
-            const messageText = `【予約申込】出張ニューボーン
-■お名前：${name}
-■お電話番号：${phone}
-■郵便番号：${zipcode}
-■ご住所：${address}
-■里帰りの場合の表札名：${nameplate}
-
-■撮影希望日①：${dateTimeText1}
-■撮影希望日②：${dateTimeText2}
-■撮影希望日③：${dateTimeText3}
-■希望プラン：${plan}
-■オプション：
-${optionText}
-
-■出産予定日or出産日：${birthDate}
-■分娩方法：${delivery}
-■お子様のお名前：${babyName}
-■お子様の性別：${babyGender}
-■出生体重：${babyWeight}
-
-■ご兄弟のお名前、性別、年齢：
-${siblings}
-■撮影に参加される方の人数と続柄：
-${attendees}
-
-■ご質問、ご相談：
-${questions}
-
-上記の内容で予約を送信しました。日程調整後、担当者からご連絡致します。`;
-
-            liff.sendMessages([{ type: 'text', text: messageText }]).then(() => { liff.closeWindow(); }).catch((err) => { alert('送信エラーが発生しました。'); });
-        }
-    </script>
-</body>
-</html>
+                <div class="conditional-detail-area" id="flowerDetailWrap" style="margin-top: 12px; padding: 14px; background: #fafafa; border-radius: 8px;">
+                    <p style="font-size: 14px; font-weight: 700; color: #222; margin-bottom: 6px;">●スタジオ生花撮影の詳細</p>
+                    <p style="font-size: 12px; color: #666; line-height: 1.4; margin-bottom: 12px;">
+                        お花の品種の指定はできません。<br>お好きなお色味で、市場に出ている旬のお花をご用意いたします。
+                    </p>
+                    <span class="sub-label" style="margin-top: 0; margin-bottom: 8px;">お好きな色味（複数選択可）</span>
+                    <div class="choice-group" style="gap: 10px;">
+                        <label class="choice-label" style="font-size: 14px;"><input type="checkbox" name="flowerColor" value="白"> 白</label>
+                        <label class="choice-label" style="font-size: 14px;"><input type="checkbox" name="flowerColor" value="グリーン"> グリーン</label>
+                        <label class="choice-label" style="font-size: 14px; align-items: flex-start;">
