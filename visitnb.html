@@ -372,7 +372,7 @@ ${attendees}
 ■ご質問、ご相談：
 ${questions}
 
-上記の内容で予約を送信しました。日程調整後、担当者からご連絡致します。`;
+上記の内容で予約を送信しました。<br>日程調整後、担当者からご連絡致します。`;
 
             liff.sendMessages([{ type: 'text', text: messageText }]).then(() => { liff.closeWindow(); }).catch((err) => { alert('送信エラーが発生しました。'); });
         }
